@@ -1,0 +1,11 @@
+{
+  "name": "STM 0803 Mesa de Som Virtual",
+  "short_name": "STM 0803",
+  "description": "Mesa de som virtual com canais MP3, controles de ganho, equalização e volume.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0e1116",
+  "theme_color": "#15191f",
+  "orientation": "portrait",
+  "icons": []
+}

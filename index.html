@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#15191f"><link rel="manifest" href="./manifest.json"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>STM 0803 • Mesa de Som Virtual</title>
+<style>
+:root{color-scheme:dark;--bg:#0e1116;--case:#252a31;--panel:#1b2027;--edge:#525b66;--blue:#168fe8;--red:#ef3e45;--green:#2bd875;--muted:#aab2bd}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#28303b 0,#11151b 55%,#090b0e 100%);font:14px system-ui,-apple-system,Segoe UI,Arial;color:#eef2f6;padding:10px}
+button,input{font:inherit}button{cursor:pointer;touch-action:manipulation}
+.app{max-width:1080px;margin:auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;margin-bottom:10px;background:linear-gradient(#303741,#1b2027);border:1px solid #596270;border-radius:12px;box-shadow:0 5px 16px #0007}
+.logo{font-weight:900;font-size:clamp(18px,4vw,26px);letter-spacing:4px;line-height:1.05}.logo small{display:block;font-size:9px;letter-spacing:3px;color:#bac4d0;margin-top:5px}.status{font-size:10px;letter-spacing:1px;color:#8ed0ff;border:1px solid #276b9e;border-radius:20px;padding:7px 9px;white-space:nowrap}
+.chassis{background:linear-gradient(135deg,#3a4049,#20242b 35%,#171a20);border:2px solid #505762;border-radius:17px;padding:9px;box-shadow:0 18px 40px #0009,inset 0 1px #ffffff18}
+.io{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) 1.15fr;gap:6px;margin-bottom:8px}
+.io-box{background:linear-gradient(#292f37,#171b21);border:1px solid #4d5661;border-radius:7px;padding:7px 4px;text-align:center;color:#d5dce4;font-size:10px;font-weight:800;letter-spacing:.6px}
+.jacks{display:flex;justify-content:center;gap:8px;margin-top:6px}.jack{width:25px;height:25px;border-radius:50%;border:4px solid #b8c0ca;background:radial-gradient(circle,#080a0e 0 34%,#737d89 39% 55%,#e0e3e7 59% 68%,#333941 73%);box-shadow:0 2px 3px #000}.jack.red{background:radial-gradient(circle,#a50d1c 0 34%,#e3444d 39% 55%,#e1e4e8 59% 68%,#333941 73%)}
+.deck{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(100px,.92fr);gap:7px}
+.channel,.master{min-width:0;background:linear-gradient(#2a3038,#191d23);border:1px solid #4a535f;border-radius:9px;padding:8px 6px;box-shadow:inset 0 1px #ffffff0a}
+.channel-title{text-align:center;font-size:clamp(9px,2vw,12px);font-weight:900;letter-spacing:.6px;padding:3px 0 7px;border-bottom:1px solid #48515c;margin-bottom:5px}
+.filepick{display:block;width:100%;background:#11161c;border:1px solid #515d6a;color:#eaf1f7;border-radius:6px;padding:8px 3px;font-size:10px;font-weight:800;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.filepick input{display:none}.filename{height:25px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;color:#a9c8e5;font-size:9px;padding:5px 0}
+.transport{display:flex;gap:4px}.transport button{flex:1;padding:7px 1px;border:1px solid #596676;border-radius:5px;background:#323b47;color:#fff;font-weight:900;font-size:11px}.transport .play{background:#0867ae;border-color:#238bd4}
+.control{margin:8px 0 4px}.labelrow{display:flex;justify-content:space-between;align-items:center;gap:2px;color:#c8d0da;font-size:9px;font-weight:900;letter-spacing:.4px}.val{color:#8ecbff;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;height:22px;margin:2px 0;accent-color:var(--blue);touch-action:pan-y}
+.knobrow{display:flex;justify-content:center;margin:7px 0 3px}.knob{width:39px;height:39px;border-radius:50%;border:3px solid #67717e;background:radial-gradient(circle at 35% 27%,#505965,#20252c 62%,#101318 68%);box-shadow:0 3px 5px #0009,inset 0 0 0 2px #171b20;position:relative;touch-action:none;cursor:ns-resize}.knob:before{content:"";position:absolute;width:4px;height:12px;left:14px;top:1px;border-radius:3px;background:var(--color,#138ee8);transform-origin:2px 17px;transform:rotate(var(--rot,0deg));box-shadow:0 0 4px #fff8}.knob.red{--color:#ff4b4b}.knob.white{--color:#eef1f4}.knob.blue{--color:#168fe8}
+.eq{border-top:1px solid #444d57;border-bottom:1px solid #444d57;padding:2px 0 5px;margin-top:7px}.eq .control{margin:5px 0}.eq input{accent-color:#168fe8}.mute{width:100%;border-radius:6px;padding:8px 2px;background:#323943;color:#fff;border:1px solid #66717e;font-size:10px;font-weight:900;margin-top:8px}.mute.on{background:#9f252c;border-color:#f45159}
+.lamps{display:flex;justify-content:space-around;font-size:8px;color:#c1cad4;margin-top:7px}.lamp{display:inline-block;width:7px;height:7px;border-radius:50%;background:#26303b;margin-right:3px}.lamp.green{background:#29df7c;box-shadow:0 0 6px #29df7c}.lamp.red{background:#e93a43;box-shadow:0 0 5px #e93a43}
+.master{display:flex;flex-direction:column;align-items:stretch}.master .channel-title{width:100%}.master .control{margin-top:8px}.meter{height:150px;background:#090c10;border:1px solid #46515d;border-radius:6px;padding:7px 5px;display:flex;align-items:flex-end;justify-content:center;gap:3px;margin:7px 0}.seg{width:10%;height:5%;background:#1eaf67;border-radius:2px;transition:height .1s}.seg.yellow{background:#d9ca30}.seg.red{background:#e3444d}
+.masterfader{display:flex;align-items:center;justify-content:center;gap:7px}.masterfader input{height:145px;width:25px;writing-mode:vertical-lr;direction:rtl;accent-color:#dbe1e8}.dbscale{display:flex;flex-direction:column;justify-content:space-between;height:145px;color:#aeb9c6;font-size:9px}
+.master .bigvalue{text-align:center;font-size:12px;font-weight:900;color:#91caff;margin:4px 0}
+.bottom{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}.bottom button{padding:11px 4px;background:linear-gradient(#1179c8,#07518c);border:1px solid #278ad0;border-radius:8px;color:#fff;font-size:11px;font-weight:900}.bottom .secondary{background:#272e37;border-color:#596573}
+.notice{font-size:11px;line-height:1.45;color:#9eaab8;text-align:center;padding:0 5px 8px}.hidden{display:none!important}
+@media(min-width:700px){body{padding:22px}.chassis{padding:14px}.channel,.master{padding:12px}.knob{width:48px;height:48px}.knob:before{left:19px;transform-origin:2px 22px}.meter{height:205px}.masterfader input,.dbscale{height:195px}.filepick{font-size:12px}.channel-title{font-size:12px}}
+@media(max-width:420px){body{padding:5px}.topbar{padding:10px}.chassis{padding:5px}.io{grid-template-columns:repeat(3,minmax(0,1fr))}.io-box:last-child{grid-column:1/-1}.deck{grid-template-columns:repeat(3,minmax(0,1fr))}.master{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;align-items:center}.master .channel-title{grid-column:1/-1}.master .control{margin:0}.meter{height:78px;margin:0}.masterfader input,.dbscale{height:80px}.master .bigvalue{margin:0}.bottom button{font-size:10px}.logo{letter-spacing:2px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar"><div class="logo">STM 0803<small>MESA DE SOM VIRTUAL • MP3 PLAYER</small></div><div class="status">● AUDIO DIGITAL</div></header>
+<main class="chassis">
+<div class="io">
+<div class="io-box">01 · MIC<div class="jacks"><span class="jack"></span></div>ENTRADA</div>
+<div class="io-box">02 · LINE<div class="jacks"><span class="jack"></span><span class="jack red"></span></div>CANAL 2</div>
+<div class="io-box">03 · LINE<div class="jacks"><span class="jack"></span><span class="jack red"></span></div>CANAL 3</div>
+<div class="io-box">AUX OUT · MAIN<div class="jacks"><span class="jack"></span><span class="jack red"></span></div>SAÍDAS</div>
+</div>
+<div class="deck" id="deck"></div>
+</main>
+<div class="bottom"><button id="playall">▶ TOCAR CANAIS</button><button class="secondary" id="pauseall">Ⅱ PAUSAR</button><button class="secondary" id="stopall">■ PARAR</button><button class="secondary" id="reset">↺ RESET</button></div>
+<div class="notice">Escolha um MP3 em cada canal. Os controles de volume, mute e equalização processam o áudio selecionado. Melhor experiência com fones de ouvido. Este é um simulador; as entradas ilustradas não conectam equipamentos físicos.</div>
+</div>
+<script>
+const deck=document.getElementById('deck');
+const channelNames=['CANAL 1 · MIC','CANAL 2 · LINE','CANAL 3 · LINE'];
+const eqDefs=[['HIGH',6500],['MID HIGH',2500],['MID LOW',450],['LOW',100]];
+const channels=[];
+let ctx=null,mainGain=null,master=0.75,animation=0;
+function ensureAudio(){
+ if(ctx)return;
+ ctx=new (window.AudioContext||window.webkitAudioContext)();
+ mainGain=ctx.createGain();mainGain.gain.value=master;mainGain.connect(ctx.destination);
+ channels.forEach(c=>wire(c));
+}
+function wire(c){
+ if(!ctx||c.source)return;
+ c.source=ctx.createMediaElementSource(c.audio);
+ c.gainNode=ctx.createGain();c.gainNode.gain.value=c.muted?0:c.level;
+ c.filters=eqDefs.map((e,i)=>{let f=ctx.createBiquadFilter();f.frequency.value=e[1];f.type=i===0?'highshelf':i===3?'lowshelf':'peaking';f.Q.value=0.8;f.gain.value=(c.eq[i]-50)*0.24;return f});
+ c.source.connect(c.gainNode);let node=c.gainNode;c.filters.forEach(f=>{node.connect(f);node=f});node.connect(mainGain);
+}
+function setText(el,text){el.textContent=text}
+function makeKnob(label,initial,color,callback){
+ const box=document.createElement('div');box.className='control';
+ box.innerHTML=`<div class="knobrow"><button class="knob ${color}" aria-label="${label}"></button></div><div class="labelrow"><span>${label}</span><span class="val">${initial}</span></div>`;
+ const k=box.querySelector('.knob'),v=box.querySelector('.val');let value=initial,down=false,y=0,start=0;
+ function set(n){value=Math.max(0,Math.min(100,Math.round(n)));k.style.setProperty('--rot',(-135+value*2.7)+'deg');v.textContent=value;callback(value)}
+ k.addEventListener('pointerdown',e=>{down=true;y=e.clientY;start=value;k.setPointerCapture(e.pointerId);e.preventDefault()});
+ k.addEventListener('pointermove',e=>{if(down)set(start+(y-e.clientY)*.8)});
+ k.addEventListener('pointerup',()=>down=false);k.addEventListener('pointercancel',()=>down=false);
+ k.addEventListener('dblclick',()=>set(50));set(initial);return box;
+}
+function makeSlider(label,value,callback,vertical=false){
+ let wrap=document.createElement('div');wrap.className='control';
+ wrap.innerHTML=`<div class="labelrow"><span>${label}</span><span class="val">${Math.round(value*100)}%</span></div><input aria-label="${label}" type="range" min="0" max="100" value="${Math.round(value*100)}">`;
+ let input=wrap.querySelector('input');input.addEventListener('input',()=>{wrap.querySelector('.val').textContent=input.value+'%';callback(+input.value/100)});return wrap;
+}
+function build(){
+ deck.innerHTML='';
+ channelNames.forEach((name,i)=>{
+  const c={audio:new Audio(),objectURL:null,source:null,gainNode:null,filters:null,level:.75,gain:50,eq:[50,50,50,50],muted:false,loaded:false};
+  c.audio.preload='metadata';c.audio.loop=false;channels.push(c);
+  const panel=document.createElement('section');panel.className='channel';
+  panel.innerHTML=`<div class="channel-title">${name}</div><label class="filepick">＋ ESCOLHER MP3<input type="file" accept=".mp3,audio/mpeg,audio/*"></label><div class="filename">Nenhuma música selecionada</div><div class="transport"><button class="play">▶</button><button class="pause">Ⅱ</button><button class="stop">■</button></div>`;
+  const file=panel.querySelector('input'),fileName=panel.querySelector('.filename');
+  file.addEventListener('change',()=>{const f=file.files&&file.files[0];if(!f)return;if(c.objectURL)URL.revokeObjectURL(c.objectURL);c.objectURL=URL.createObjectURL(f);c.audio.src=c.objectURL;c.audio.load();c.loaded=true;fileName.textContent=f.name;fileName.title=f.name;});
+  panel.querySelector('.play').onclick=async()=>{if(!c.loaded){file.click();return}try{ensureAudio();await ctx.resume();wire(c);await c.audio.play()}catch(e){alert('Não foi possível tocar esse arquivo. Escolha um MP3 do seu aparelho e tente novamente.')}};
+  panel.querySelector('.pause').onclick=()=>c.audio.pause();
+  panel.querySelector('.stop').onclick=()=>{c.audio.pause();c.audio.currentTime=0};
+  panel.append(makeKnob('GAIN',50,'red',n=>{c.gain=n;if(c.gainNode)c.gainNode.gain.setTargetAtTime(c.muted?0:(n/50)*c.level,ctx.currentTime,.04)}));
+  const eq=document.createElement('div');eq.className='eq';
+  eqDefs.forEach((d,j)=>eq.append(makeKnob(d[0],50,'blue',n=>{c.eq[j]=n;if(c.filters&&ctx)c.filters[j].gain.setTargetAtTime((n-50)*.24,ctx.currentTime,.04)})));
+  panel.append(eq);
+  panel.append(makeSlider('LEVEL',c.level,n=>{c.level=n;if(c.gainNode&&ctx)c.gainNode.gain.setTargetAtTime(c.muted?0:(c.gain/50)*n,ctx.currentTime,.04)}));
+  const mute=document.createElement('button');mute.className='mute';mute.textContent='○ MUTE';mute.onclick=()=>{c.muted=!c.muted;mute.classList.toggle('on',c.muted);mute.textContent=c.muted?'● MUTE ATIVO':'○ MUTE';if(c.gainNode&&ctx)c.gainNode.gain.setTargetAtTime(c.muted?0:(c.gain/50)*c.level,ctx.currentTime,.04);};panel.append(mute);
+  const lamps=document.createElement('div');lamps.className='lamps';lamps.innerHTML='<span><i class="lamp green"></i>SIGNAL</span><span><i class="lamp"></i>CLIP</span>';panel.append(lamps);
+  c.audio.addEventListener('play',()=>lamps.querySelector('.lamp').classList.add('green'));
+  c.audio.addEventListener('pause',()=>lamps.querySelector('.lamp').classList.remove('green'));
+  deck.append(panel);
+ });
+ const m=document.createElement('section');m.className='master';
+ m.innerHTML='<div class="channel-title">MASTER / AUX</div><div class="auxarea"></div><div class="meter" aria-label="Medidor de áudio"></div><div class="masterfader"><div class="dbscale"><span>0</span><span>-10</span><span>-20</span><span>-30</span><span>-∞</span></div><input aria-label="MAIN LEVEL" id="mainlevel" type="range" min="0" max="100" value="75"><div class="dbscale"><span>MAX</span><span> </span><span> </span><span> </span><span>MIN</span></div></div><div class="bigvalue" id="mainvalue">75%</div><div class="labelrow"><span>OUTPUT LEVEL</span><span> L + R</span></div>';
+ m.querySelector('.auxarea').append(makeKnob('AUX LEVEL',50,'white',()=>{}));
+ const meter=m.querySelector('.meter');for(let i=0;i<12;i++){let seg=document.createElement('div');seg.className='seg'+(i>9?' red':i>7?' yellow':'');meter.append(seg)}
+ m.querySelector('#mainlevel').addEventListener('input',e=>{master=+e.target.value/100;m.querySelector('#mainvalue').textContent=e.target.value+'%';if(mainGain&&ctx)mainGain.gain.setTargetAtTime(master,ctx.currentTime,.04)});
+ deck.append(m);
+}
+document.getElementById('playall').onclick=async()=>{try{ensureAudio();await ctx.resume();let loaded=channels.filter(c=>c.loaded);if(!loaded.length){alert('Primeiro toque em “ESCOLHER MP3” em um canal e selecione uma música.');return}await Promise.all(loaded.map(c=>{wire(c);return c.audio.play()}))}catch(e){alert('Não foi possível iniciar o áudio. Tente novamente.')}};
+document.getElementById('pauseall').onclick=()=>channels.forEach(c=>c.audio.pause());
+document.getElementById('stopall').onclick=()=>channels.forEach(c=>{c.audio.pause();try{c.audio.currentTime=0}catch(e){}});
+document.getElementById('reset').onclick=()=>{channels.forEach(c=>{c.audio.pause();try{c.audio.currentTime=0}catch(e){}c.muted=false;c.level=.75;c.gain=50;c.eq=[50,50,50,50]});master=.75;if(mainGain&&ctx)mainGain.gain.setTargetAtTime(master,ctx.currentTime,.04);build()};
+build();
+let t=0;setInterval(()=>{t+=.22;const bars=document.querySelectorAll('.seg');bars.forEach((b,i)=>{let h=5+Math.abs(Math.sin(t+i*.5))*78*(master);b.style.height=h+'%'});},120);
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+</script>
+</body></html>
